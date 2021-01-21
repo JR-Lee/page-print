@@ -1,0 +1,27 @@
+{
+  "presets": [
+    [
+      "@babel/preset-env",
+      {
+        "modules": false,
+        "useBuiltIns": "entry",
+        // "useBuiltIns": "usage",
+        "corejs": 3,
+        "targets": {
+          // "chrome": 87,
+          // "browsers": [
+            // "defaults",
+            // ">1%, not IE 11"
+            // "last 2 chrome version"
+          // ]
+        }
+      }
+    ]
+  ],
+  "plugins": [
+    ["@babel/plugin-transform-runtime", {
+      "helpers": false,
+      "regenerator": true
+    }]
+  ]
+}
