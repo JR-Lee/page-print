@@ -18,6 +18,10 @@ export const getScrollbarHeight = (): number => {
   return height
 }
 
+/**
+ * 是否为字符串
+ * @param val unknown
+ */
 export const isString = (val: unknown): val is string => typeof val === 'string'
 
 /**
@@ -40,6 +44,8 @@ export const generateDiv = (): HTMLElement => {
   }
 
   for (const key in style) div.style[key] = style[key] as string
+
+  document.body.appendChild(div)
   
   return div
 }
@@ -60,6 +66,8 @@ export const generateIframe = (): HTMLIFrameElement => {
   }
 
   for (const key in inlineStyle) ifr.style[key] = inlineStyle[key] as string
+
+  document.body.appendChild(ifr)
 
   return ifr
 }

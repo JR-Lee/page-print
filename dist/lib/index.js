@@ -1,6 +1,6 @@
 /*!
  * pagePrint.js v1.0.0
- * © 2021-2021-1-21 3:35:21 ├F10: PM┤ JR
+ * © 2021-2021-1-22 7:53:07 ├F10: PM┤ JR
  * Released under the MIT License.
  */
 
@@ -900,6 +900,11 @@
     document.body.removeChild(div);
     return height;
   };
+  /**
+   * 是否为字符串
+   * @param val unknown
+   */
+
   var isString = function isString(val) {
     return typeof val === 'string';
   };
@@ -926,6 +931,7 @@
       div.style[key] = style[key];
     }
 
+    document.body.appendChild(div);
     return div;
   };
   /**
@@ -947,6 +953,7 @@
       ifr.style[key] = inlineStyle[key];
     }
 
+    document.body.appendChild(ifr);
     return ifr;
   };
   /**
@@ -989,9 +996,6 @@
       };
       this.scrollbarHeight = getScrollbarHeight();
       this.wrap = generateDiv();
-      this.iframe = generateIframe();
-      document.body.appendChild(this.wrap);
-      document.body.appendChild(this.iframe);
     }
 
     _createClass(PagePrint, [{
@@ -1016,6 +1020,7 @@
 
                 case 4:
                   _this$column = this.column, width = _this$column.width, height = _this$column.height;
+                  !this.wrap && (this.wrap = generateDiv());
                   style = {
                     width: "".concat(width, "px"),
                     height: "".concat(height, "px"),
@@ -1033,7 +1038,7 @@
                     }, 400);
                   }));
 
-                case 9:
+                case 10:
                 case "end":
                   return _context.stop();
               }
@@ -1057,8 +1062,10 @@
             height = _this$column2.height,
             _this$opts = this.opts,
             type = _this$opts.type,
-            pageItemStyle = _this$opts.pageItemStyle;
-        var ifr = this.iframe;
+            pageWrapStyle = _this$opts.pageWrapStyle,
+            pageContentStyle = _this$opts.pageContentStyle;
+        var ifr = generateIframe();
+        this.iframe = ifr;
         var styleObj = {
           'html, body': {
             height: '100%',
@@ -1070,12 +1077,12 @@
             flexDirection: 'column',
             height: '100%',
             boxSizing: 'border-box'
-          }, pageItemStyle),
-          '.page-item > canvas': {
+          }, pageWrapStyle),
+          '.page-item > canvas': _objectSpread2({
             width: '100%!important',
             height: '100%!important',
             boxSizing: 'border-box'
-          },
+          }, pageContentStyle),
           '@page': {
             size: "".concat(type, " portrait"),
             marks: 'none',
@@ -1157,7 +1164,7 @@
       key: "print",
       value: function () {
         var _print = _asyncToGenerator( /*#__PURE__*/regenerator.mark(function _callee3() {
-          var _this$iframe, doc, win, _this$opts3, pageHandler, emptyWrap, removeIframe, canvasList, fragment;
+          var _this$iframe, doc, win, _this$opts3, pageHandler, emptyWrap, canvasList, fragment;
 
           return regenerator.wrap(function _callee3$(_context3) {
             while (1) {
@@ -1168,7 +1175,7 @@
 
                 case 2:
                   this.setIframe();
-                  _this$iframe = this.iframe, doc = _this$iframe.contentDocument, win = _this$iframe.contentWindow, _this$opts3 = this.opts, pageHandler = _this$opts3.pageHandler, emptyWrap = _this$opts3.emptyWrap, removeIframe = _this$opts3.removeIframe;
+                  _this$iframe = this.iframe, doc = _this$iframe.contentDocument, win = _this$iframe.contentWindow, _this$opts3 = this.opts, pageHandler = _this$opts3.pageHandler, emptyWrap = _this$opts3.emptyWrap;
                   _context3.next = 6;
                   return this.shot();
 
@@ -1184,7 +1191,7 @@
                   });
                   doc === null || doc === void 0 ? void 0 : doc.body.appendChild(fragment);
                   win === null || win === void 0 ? void 0 : win.print();
-                  removeIframe && document.body.removeChild(this.iframe);
+                  document.body.removeChild(this.iframe);
                   emptyWrap && (this.wrap.innerHTML = '');
 
                 case 13:
@@ -1226,16 +1233,15 @@
   var instance = null;
 
   var singleton = function singleton(opts) {
-    if (!html2canvas__default['default']) throw Error('pagePrint：打印依赖 html2canvas，请先安装 html2canvas。');
+    if (!html2canvas__default['default']) throw new Error('pagePrint：打印依赖 html2canvas，请先安装 html2canvas。');
 
     if (opts.type && !PagePrint.printTypeList.includes(opts.type)) {
-      throw Error("pagePrint \u7684 type \u53C2\u6570\u5E94\u4E3A\uFF1A".concat(PagePrint.printTypeList.join(' | ')));
+      throw new TypeError("pagePrint \u7684 type \u53C2\u6570\u5E94\u4E3A\uFF1A".concat(PagePrint.printTypeList.join(' | ')));
     }
 
     var defaultOpts = {
       type: 'A4',
       emptyWrap: true,
-      removeIframe: true,
       ratio: 1
     };
     opts = Object.assign(defaultOpts, opts);

@@ -1,9 +1,28 @@
 import html2canvas, { Options as html2canvasOptions } from 'html2canvas'
-import { PrintType, Columns, ElementType, PrintOpts } from 'types/index'
-import { generateDiv, generateIframe, generateStyleSheet, getScrollbarHeight, isString } from 'utils/index'
+import { generateDiv, generateIframe, generateStyleSheet, getScrollbarHeight, isString } from './utils/index'
+
+export declare interface Columns {
+  width: number;
+  height: number;
+}
+
+export declare type PrintType = 'A1' | 'A2' | 'A3' | 'A4' | 'A5'
+
+export declare type ElementType = HTMLElement | HTMLCanvasElement
+
+export declare interface PrintOpts {
+  el: ElementType | string; // 目标 dom
+  type?: PrintType; // 打印规格
+  ratio?: number; // 分辨率，默认 1
+  emptyWrap?: boolean; // 执行 print 后是否清空 wrap
+  pageWrapStyle?: Partial<CSSStyleDeclaration>; // 每一页外壳的样式
+  pageContentStyle?: Partial<CSSStyleDeclaration>; // 每一页内容的样式
+  pageHandler?: (pageEl: HTMLElement) => void; // 每一页的回调
+  wrapHandler?: (wrapEl: HTMLElement) => HTMLElement; // wrap 的回调
+}
 
 class PagePrint {
-  static readonly printTypeList: ReadonlyArray<PrintType> = [ 'A1', 'A2', 'A3', 'A4', 'A5' ]
+  static readonly printTypeList: PrintType[] = [ 'A1', 'A2', 'A3', 'A4', 'A5' ]
   static readonly printTypeMap: Map<PrintType, Columns> = new Map([
     ['A1', { width: 1685, height: 2384 }],
     ['A2', { width: 1190, height: 1168 }],
@@ -12,10 +31,10 @@ class PagePrint {
     ['A5', { width: 420, height: 595 }]
   ])
 
-  readonly wrap: HTMLElement
-  public iframe!: HTMLIFrameElement
-  public opts!: PrintOpts
-  public column: Columns = {
+  private wrap: HTMLElement
+  private iframe!: HTMLIFrameElement
+  opts!: PrintOpts
+  column: Columns = {
     width: 0,
     height: 0
   }
@@ -23,9 +42,6 @@ class PagePrint {
 
   constructor () {
     this.wrap = generateDiv()
-    this.iframe = generateIframe()
-    document.body.appendChild(this.wrap)
-    document.body.appendChild(this.iframe)
   }
   
   async setWrap (): Promise<void> {
@@ -34,6 +50,8 @@ class PagePrint {
     if (!target) throw Error(`未找到 el 元素`)
 
     const { width, height } = this.column
+
+    !this.wrap && (this.wrap = generateDiv())
 
     const style: Partial<CSSStyleDeclaration> = {
       width: `${width}px`,
@@ -49,9 +67,10 @@ class PagePrint {
   }
 
   setIframe () {
-    const { column: { width, height }, opts: { type, pageItemStyle } } = this
+    const { column: { width, height }, opts: { type, pageWrapStyle, pageContentStyle } } = this
     
-    const ifr = this.iframe
+    const ifr = generateIframe()
+    this.iframe = ifr
 
     const styleObj = {
       'html, body': { height: '100%', margin: '0', padding: '0' },
@@ -60,12 +79,13 @@ class PagePrint {
         flexDirection: 'column',
         height: '100%',
         boxSizing: 'border-box',
-        ...pageItemStyle // 这里是自定义样式
+        ...pageWrapStyle // 这里是自定义样式
       },
       '.page-item > canvas': {
         width: '100%!important',
         height: '100%!important',
-        boxSizing: 'border-box'
+        boxSizing: 'border-box',
+        ...pageContentStyle
       },
       '@page': {
         size: `${type} portrait`,
@@ -128,7 +148,7 @@ class PagePrint {
 
     const {
       iframe: { contentDocument: doc, contentWindow: win },
-      opts: { pageHandler, emptyWrap, removeIframe }
+      opts: { pageHandler, emptyWrap }
     } = this
 
     const canvasList = await this.shot()
@@ -145,7 +165,7 @@ class PagePrint {
 
     win?.print()
     
-    removeIframe && document.body.removeChild(this.iframe)
+    document.body.removeChild(this.iframe)
     emptyWrap && (this.wrap.innerHTML = '')
   }
 }
@@ -153,16 +173,15 @@ class PagePrint {
 let instance: PagePrint | null = null
 
 const singleton = (opts: PrintOpts) => {
-  if (!html2canvas) throw Error('pagePrint：打印依赖 html2canvas，请先安装 html2canvas。')
+  if (!html2canvas) throw new Error('pagePrint：打印依赖 html2canvas，请先安装 html2canvas。')
 
   if (opts.type && !PagePrint.printTypeList.includes(opts.type)) {
-    throw Error(`pagePrint 的 type 参数应为：${PagePrint.printTypeList.join(' | ')}`)
+    throw new TypeError(`pagePrint 的 type 参数应为：${PagePrint.printTypeList.join(' | ')}`)
   }
 
   const defaultOpts: Partial<PrintOpts> = {
     type: 'A4',
     emptyWrap: true,
-    removeIframe: true,
     ratio: 1
   }
   opts = Object.assign(defaultOpts, opts)

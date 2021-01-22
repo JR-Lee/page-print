@@ -24,12 +24,12 @@ const baseConfig = {
   ],
   plugins: [
     resolve(),
-    commonJS(),
     tsPlugin({
       useTsconfigDeclarationDir: true, // 是否使用 tsconfig.json 的声明文件输出路径
       tsconfig: 'tsconfig.json',
-      extensions: [ '.ts', '.d.ts' ]
+      extensions: [ '.js', '.ts', '.d.ts' ]
     }),
+    commonJS(),
     alias({
       resolve: [ '.ts', '.d.ts' ],
       entries: [
@@ -51,8 +51,8 @@ const baseConfig = {
 
 const config = outputTypes.map(type => Object.assign({
   output: {
-    // dir: 'lib',
-    file: `lib/index.js`,
+    dir: 'dist/lib',
+    // file: `dist/lib/index.js`,
     format: type,
     name: 'pagePrint',
     banner

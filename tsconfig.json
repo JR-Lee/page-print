@@ -2,7 +2,7 @@
   "compilerOptions": {
     "baseUrl": "./",
     "paths": {
-      "types/*": ["src/types/*"],
+      // "types/*": ["typings/*"],
       "utils/*": ["src/utils/*"],
       "root/*": ["src/*"]
     },
@@ -20,14 +20,15 @@
     "removeComments": false, // 删除注释
     "declaration": true, // 生成定义文件
     "declarationMap": false, // 生成定义sourceMap
-    "declarationDir": "lib/types", // 定义文件输出目录
+    "declarationDir": "dist/types", // 定义文件输出目录
     "lib": ["esnext", "dom"],  // 导入库类型定义
-    // "types": [], // 导入指定类型包
+    "types": ["node"], // 导入指定类型包
+    // "typeRoots": [],
     "noImplicitAny": true,
     "strictNullChecks": true
   },
   "include": [
-    "src/*"  // 导入目录
+    "src/*" // 导入目录
   ],
   "exclude": [
     "node_modules/*"
